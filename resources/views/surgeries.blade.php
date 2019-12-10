@@ -13,10 +13,17 @@
 			<div class="col-md-10 col-xs-12">
 				<div class="row mb20">
 					<div class="col-md-12">
-                        <h4>You have <strong>{{ Auth::user()->surgeries()->count() }}</strong> performed surgeries</h4>
+                        @if (isset($_GET['filter']) && $_GET['filter'] = 'complications')
+                            <h4>You have <strong>{{ Auth::user()->surgeries()->count() - Auth::user()->surgeries()->where('complications', '')->count() }}</strong> performed surgeries with <span class="text-danger">complications</span></h4>
+                        @else
+                            <h4>You have <strong>{{ Auth::user()->surgeries()->count() }}</strong> performed surgeries</h4>
+                        @endif
                     </div>
                     <div class="col-md-12">
 					@forelse (Auth::user()->surgeries()->sortByDesc('id') as $element)
+                        @if (isset($_GET['filter']) && $_GET['filter'] = 'complications')
+                            @continue($element->complications == '')
+                        @endif
                         <div class="panel mb5">
                             <div class="panel-heading p10 pb5" role="tab" id="panel-heading{{ $element->id }}">
                                 <span class="badge pull-right">{{ isset( $element->surgery ) ? 'RESURGERY' : '' }}</span>

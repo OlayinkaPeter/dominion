@@ -10,7 +10,7 @@
 			</div>
 			<div class="modal-body">
 
-				<button role="button" class="btn btn-primary btn-xs mb10" onclick="javascript:printVisitDiv('visit{{ $element->id }}');">Print</button>
+				{{-- <button role="button" class="btn btn-primary btn-xs mb10" onclick="javascript:printVisitDiv('visit{{ $element->id }}');">Print</button> --}}
 
 				<div id="visit{{ $element->id }}">
 					{{-- <div class="h4"><strong>Visit Details</strong></div> --}}
@@ -22,8 +22,14 @@
 						<dd class="mb5"><span class="badge badge-primary">{{ $active_object->type }}</span></dd>
 						<dt>Title</dt>
 						<dd class="mb5">{{ $active_object->title }}</dd>
-						<dt>Patient</dt>
-						<dd class="mb5">{{ $active_object->patient->full_name() }} <span title="Phone Number">{{ $active_object->patient->phone_number }}</span> {!! $active_object->patient->file_number(true) !!}</dd>
+						@if (get_class(Auth::user()) == "App\User")
+							<dt>Patient</dt>
+							<dd class="mb5">{{ $active_object->patient->full_name() }} <span title="Phone Number">{{ $active_object->patient->phone_number }}</span> {!! $active_object->patient->file_number(true) !!}</dd>
+						@endif
+				    <dt>Admission Date</dt>
+				    <dd class="mb5">
+				        {{ is_null($active_object->admission_date) ? "" : Carbon::createFromFormat("Y-m-d H:i:s", $active_object->admission_date)->toFormattedDateString() }}
+				    </dd>
 						<dt>Discharged On</dt>
 						<dd class="mb5">
 							{{ is_null($active_object->discharged_on) ? "" : Carbon::createFromFormat("Y-m-d H:i:s", $active_object->discharged_on)->toFormattedDateString() }}
@@ -133,7 +139,7 @@
 						@if ( $active_object->surgeries->count() != 0 )
 							<ol>
 								@foreach ($active_object->surgeries as $element)
-									<li>{{ $element->surgery_name }} on <span title="{{ is_null($element->surgery_date) ? '' : Carbon::createFromFormat('Y-m-d', $element->surgery_date)->toFormattedDateString() }}">{{ $element->surgery_date }}</span> [<strong>{!! (blank($element->complications)) ? '' : '<span title="'.$element->complications.'">SOME COMPLICATIONS</span>' !!}</strong>]</li>
+									<li>{{ $element->surgery_name }} on <span title="{{ is_null($element->surgery_date) ? '' : Carbon::createFromFormat('Y-m-d', $element->surgery_date)->toFormattedDateString() }}">{{ $element->surgery_date }}</span> {!! (blank($element->complications)) ? '' : '[<strong><span title="'.$element->complications.'">SOME COMPLICATIONS</span></strong>]' !!}</li>
 								@endforeach
 							</ol>
 						@else

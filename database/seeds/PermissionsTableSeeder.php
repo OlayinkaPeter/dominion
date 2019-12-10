@@ -49,6 +49,24 @@ class PermissionsTableSeeder extends Seeder
 				]
 			],
 			[
+				'table' => 'patient_files',
+				'actions' => [
+					[
+						'action' => 'view',
+						'permit' => 4,
+					], [
+						'action' => 'create',
+						'permit' => 4,
+					], [
+						'action' => 'update',
+						'permit' => 4,
+					], [
+						'action' => 'delete',
+						'permit' => 1,
+					]
+				]
+			],
+			[
 				'table' => 'permissions',
 				'actions' => [
 					[
@@ -81,6 +99,24 @@ class PermissionsTableSeeder extends Seeder
 					], [
 						'action' => 'delete',
 						'permit' => 3,
+					]
+				]
+			],
+			[
+				'table' => 'reminders',
+				'actions' => [
+					[
+						'action' => 'view',
+						'permit' => 4,
+					], [
+						'action' => 'create',
+						'permit' => 4,
+					], [
+						'action' => 'update',
+						'permit' => 4,
+					], [
+						'action' => 'delete',
+						'permit' => 4,
 					]
 				]
 			],

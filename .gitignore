@@ -1,3 +1,4 @@
+/sftp-config.json
 /node_modules
 /public/urban
 /public/hot
@@ -6,6 +7,7 @@
 /vendor
 /.idea
 /.vagrant
+/.vscode
 Homestead.json
 Homestead.yaml
 npm-debug.log

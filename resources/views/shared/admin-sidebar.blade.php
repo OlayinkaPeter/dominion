@@ -24,7 +24,7 @@
     <ul class="nav">
 
     	<li class="text-center">
-        <img src="{{ asset(Auth::guard('admin')->user()->profile_picture) }}" class="header-avatar img-circle ml10" alt="avata" title="user" width="50px" height="50px">
+        <img src="{{ asset(Auth::guard('admin')->user()->profile_picture_thumb()) }}" class="header-avatar img-circle ml10" alt="avata" title="user" width="50px" height="50px">
         <p class="" style="color: #fff; padding: 5px; margin: 0;">{{ Auth::guard('admin')->user()->first_name }} {{ Auth::guard('admin')->user()->last_name }}</p>
         <span class="bg-white" style="padding: 2px 5px; margin: 0;">{{ Auth::guard('admin')->user()->role->name }}</span>
         <div class="clearfix"></div>
@@ -93,16 +93,17 @@
         <!-- /patients -->
       @endcan
 
-      {{-- @can('view', App\Visit::class)
-        <!-- patient_visits -->
-        <li class="{{ isset($page) && $page->view == 'm.patient_visits' ? 'active' : '' }}">
-          <a href="{{ url('/m/patient/0/visits') }}">
-            <i class="fa fa-child"></i>
-            <span>Patient Visits</span>
+      @can('view', App\PatientFile::class)
+        <!-- patients -->
+        <li class="{{ isset($page) && $page->view == 'm.patient_files' ? 'active' : '' }}">
+          <a href="{{ url('/m/patient_files') }}">
+            <i class="fa fa-file"></i>
+            <span>Patient Files</span>
+            <span class="label pull-right">{{ App\PatientFile::count() }}</span>
           </a>
         </li>
-        <!-- /patient_visits -->
-      @endcan --}}
+        <!-- /patients -->
+      @endcan
 
       @can('view', App\Visit::class)
         <!-- visits -->
@@ -110,6 +111,7 @@
           <a href="{{ url('/m/visits') }}">
             <i class="fa fa-child"></i>
             <span>All Visits</span>
+            <span class="label pull-right">{{ App\Visit::count() }}</span>
           </a>
         </li>
         <!-- /visits -->
@@ -121,6 +123,7 @@
           <a href="{{ url('/m/surgeries') }}">
             <i class="fa fa-stethoscope"></i>
             <span>All Surgeries</span>
+            <span class="label pull-right">{{ App\Surgery::count() }}</span>
           </a>
         </li>
         <!-- /surgeries -->
@@ -132,6 +135,7 @@
           <a href="{{ url('/m/surgery_names') }}">
             <i class="fa fa-bolt"></i>
             <span>Surgery Names</span>
+            <span class="label pull-right">{{ App\SurgeryName::count() }}</span>
           </a>
         </li>
         <!-- /surgery_names -->
@@ -143,6 +147,7 @@
           <a href="{{ url('/m/billings') }}">
             <i class="fa fa-money"></i>
             <span>All Billings</span>
+            <span class="label pull-right">{{ App\Billing::count() }}</span>
           </a>
         </li>
         <!-- /billings -->
@@ -154,19 +159,35 @@
           <a href="{{ url('/m/sms') }}">
             <i class="fa fa-envelope"></i>
             <span>All SMS</span>
+            <span class="label pull-right">{{ App\Sms::count() }}</span>
           </a>
         </li>
         <!-- /sms -->
       @endcan
 
+      @can('view', App\Reminder::class)
+        <!-- reminder -->
+        <li class="{{ isset($page) && $page->view == 'm.reminders' ? 'active' : '' }}">
+          <a href="{{ url('/m/reminders') }}">
+            <i class="fa fa-dot-circle-o"></i>
+            <span>All Reminder</span>
+            <span class="label pull-right">{{ Auth::user()->reminders->count() }}</span>
+          </a>
+        </li>
+        <!-- /reminder -->
+      @endcan
+
+      @can('view', App\Post::class)
       <!-- blog_posts -->
       <li class="{{ isset($page) && $page->view == 'm.blog.posts' ? 'active' : '' }}">
         <a href="{{ url('/m/blog/posts') }}">
           <i class="fa fa-paragraph"></i>
           <span>Blog Posts</span>
+            <span class="label pull-right">{{ App\Post::count() }}</span>
         </a>
       </li>
       <!-- /blog_posts -->
+      @endcan
 
       <li class="m15"></li>
 
@@ -176,6 +197,7 @@
           <a href="{{ url('/m/user-permissions') }}">
             <i class="fa fa-check"></i>
             <span>User Permissions</span>
+            <span class="label pull-right">{{ App\UserPermission::count() }}</span>
           </a>
         </li>
         <!-- /user permissions -->
@@ -187,6 +209,7 @@
           <a href="{{ url('/m/users') }}">
             <i class="fa fa-group"></i>
             <span>Users / Staff Management</span>
+            <span class="label pull-right">{{ App\User::count() }}</span>
           </a>
         </li>
         <!-- /users -->

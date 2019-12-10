@@ -38,7 +38,50 @@
 
                             <div class="form-group">
                                 <label class="form-control-label">SMS Message <span class="text-danger">*</span></label>
-                                <textarea name="message" class="form-control" rows="5" placeholder="Message">{{ old('message') }}</textarea>
+                                <textarea name="message" class="form-control" rows="5" placeholder="Message" required>{{ old('message') }}</textarea>
+                                <span class="form-text"><small class="msg-characters">160 characters = 1 message unit</small></span>
+                            </div>
+                        </div>
+                        <div class="panel-footer">
+                            <a class="btn btn-secondary" onclick="javascript: window.history.back();">Back</a>
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-1 col-xs-12"></div>
+        </div>
+        @elseif (isset($page->action) && strtolower($page->action) == "unpaid")
+        <div class="row mb15">
+            <div class="col-md-1 col-xs-12"></div>
+            <div class="col-md-10 col-xs-12">
+                <form action="{{ url('/m/sms/create') }}" method="post">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <div class="panel-title">Send Sms to <strong>Patients with unpaid bills</strong></div>
+                        </div>
+                        <div class="panel-body">
+                            {{ csrf_field() }}
+
+                            <div class="form-group">
+                                <label class="form-control-label">Select Patients <span class="text-danger">*</span></label>
+                                <select class="select-patients" name="patients[]" required multiple>
+                                    @foreach ($patients as $element)
+                                        <option value="{{ $element->id }}" {{ ($element->unpaid_bills()->count() > 0) ? 'selected' : '' }}>{{ $element->first_name.' '.$element->last_name }} [{{ $element->phone_number }}] [{{ $element->file_number }}]</option>
+                                    @endforeach
+                                </select>
+                                <span class="form-text"><small><span class="text-danger">min: 1, max: 200</span></small></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-control-label">SMS From </label>
+                                <input class="form-control" type="text" name="from" placeholder="Sms From" value="{{ old('from', App\Setting::find(1)->sms_from) }}" >
+                                {{-- <span class="form-text"><small><strong>DMC</strong> by default.</small></span> --}}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-control-label">SMS Message <span class="text-danger">*</span></label>
+                                <textarea name="message" class="form-control" rows="5" placeholder="Message" required>{{ old('message', 'This is a reminder from DOMINION SPECIALIST HOSPITAL that you owe us a sum of [total_unpaid_bills] and we are expecting you to balance up.') }}</textarea>
                                 <span class="form-text"><small class="msg-characters">160 characters = 1 message unit</small></span>
                             </div>
                         </div>
@@ -142,6 +185,14 @@
         $('textarea[name="message"]').keyup(function() {
             $(this).parent().find('.msg-characters').text($(this).val().length + ' characters = ' + Math.ceil($(this).val().length/160) + ' message unit');
         });
+
+        $('#checkAllPatients').click(function() {
+            if ($(this).is(':checked')) {
+                $('.form-group.select-patients').addClass('hidden');
+            } else {
+                $('.form-group.select-patients').addClass('hidden');
+            }
+        });
     </script>
     <script type="text/javascript">
         var base_url = '{{ url('/m/sms') }}';
@@ -162,7 +213,7 @@
         // For Printing
         function printSmsDiv(divName) {
             w=window.open();
-            w.document.write("<!DOCTYPE html><html><head><title>Sms Printout | DMC</title><link href='{{ asset('urban/vendor/bootstrap/dist/css/bootstrap.css') }}' rel='stylesheet'><link href='{{ asset('urban/styles/urban.css') }}' rel='stylesheet'><style type='text/css'>a.text-primary{color:#0099cc!important;}a.text-primary:hover{color:#007399!important;}a.text-danger{color:#d96557!important;}a.text-danger:hover{color:#ce402f!important;}@media(min-width: 768px){.dl-horizontal dt{width:40%;}.dl-horizontal dd{margin-left:44%;width:55%;}}</style></head><body>" +
+            w.document.write("<!DOCTYPE html><html><head><title>Sms Printout | DMC</title><link href='{{ asset('urban/vendor/bootstrap/dist/css/bootstrap.css') }}' rel='stylesheet'><link href='{{ asset('urban/styles/urban.css') }}' rel='stylesheet'><style type='text/css'>@media print {.hidden-print{display: none !important;}}a.text-primary{color:#0099cc!important;}a.text-primary:hover{color:#007399!important;}a.text-danger{color:#d96557!important;}a.text-danger:hover{color:#ce402f!important;}@media(min-width: 768px){.dl-horizontal dt{width:40%;}.dl-horizontal dd{margin-left:44%;width:55%;}}</style></head><body style='background: transparent;'>" +
             "@include('shared.print-header')" +
             document.getElementById(divName).innerHTML + "</body></html>");
             w.print();

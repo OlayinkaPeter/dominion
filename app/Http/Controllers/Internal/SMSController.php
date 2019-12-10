@@ -98,6 +98,15 @@ class SmsController extends InternalControl
             ->with('page', $this->page);
     }
 
+    public function unpaid()
+    {
+        $this->page->action = "unpaid";
+        return view($this->page->view)
+            ->with('sms', Sms::latest()->paginate(isset($_GET['entries']) ? $_GET['entries'] : 10))
+            ->with('patients', Patient::all())
+            ->with('page', $this->page);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -106,20 +115,48 @@ class SmsController extends InternalControl
      */
     public function store(Request $request)
     {
-        dd($request);
+        // dd($request);
+        $request->validate([
+            'message' => 'required|string|min:2'
+        ]);
+
         $request['user_id'] = Auth::id();
 
         $obj1 = new Sms($request->all());
         $obj1->save();
 
-        // Send SMS Message
-        $setting = Setting::findOrFail(1);
-        $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
-        $response = $xmx->sendSms($request->from, array_flatten(Patient::whereIn('id', $request->patients)->select('phone_number')->get()->toArray()), $request->message);
 
+        // Send SMS Message
+        if (str_contains($request->message, '[total_unpaid_bills]')) {
+            $setting = Setting::findOrFail(1);
+            $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
+
+            foreach ($request->patients as $val) {
+                if(Patient::find($val)) {
+                    $value = Patient::find($val);
+                    $custom_message = str_ireplace('[total_unpaid_bills]', 'N'.$value->unpaid_bills()->sum('amount'), $request->message);
+                    $response = $xmx->sendSms($request->from, array($value->phone_number), $custom_message);
+                }
+            }
+        } else {
+            $setting = Setting::findOrFail(1);
+            $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
+            if ( isset($request->all_patients) ) {
+                $response = $xmx->sendSms($request->from, array_flatten(Patient::all()->select('phone_number')->get()->toArray()), $request->message);
+            } else {
+                $response = $xmx->sendSms($request->from, array_flatten(Patient::whereIn('id', $request->patients)->select('phone_number')->get()->toArray()), $request->message);
+            }
+        }
 
         // If Message is sent
-        if (true) {
+        if ( count($response) > 1 ) {
+            if ( count($response) == 2 ) {
+                session()->flash('success', 'Sms Successfully Sent! <strong>' . $response[1] . '</strong> sms units used');
+            }
+            if ( count($response) == 3 ) {
+                session()->flash('success', 'Sms Successfully Sent! <strong>' . $response[1] . '</strong> sms units used');
+                session()->flash('error', 'Sms failed to send to <strong>' . $response[2] . '</strong>');
+            }
             // Save Sms Patients
             $request['sms_id'] = $obj1->id;
             $counter = 0;
@@ -130,10 +167,13 @@ class SmsController extends InternalControl
                 $obj2->firstOrCreate($obj2->toArray());
                 $counter++;
             }
+        } else {
+            if ($response != 'Successful') {
+                return redirect()->back()->withErrors('Error ' . $response . ' ' . SmartXmx::interpreteResponse($response));
+            }
         }
-        dd($response);
 
-        session()->flash('success', 'New Sms Created and Successfuly Sent to <strong>' . $counter .'</strong> Patients!');
+        session()->flash('success', 'New Sms Created and Successfully Sent to <strong>' . $counter .'</strong> Patients!');
         return redirect()->back();
     }
 
@@ -168,6 +208,10 @@ class SmsController extends InternalControl
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'message' => 'required|string|min:2'
+        ]);
+
         $request['user_id'] = Auth::id();
 
         // $obj1 = Sms::findOrFail($id);
@@ -178,10 +222,40 @@ class SmsController extends InternalControl
         // Send SMS Message
         $setting = Setting::findOrFail(1);
         $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
-        $response = $xmx->sendSms($request->from, $request->patients, $request->message);
+        if ( isset($request->all_patients) ) {
+            $response = $xmx->sendSms($request->from, array_flatten(Patient::all()->select('phone_number')->get()->toArray()), $request->message);
+        } else {
+            if (str_contains($request->message, '[total_unpaid_bills]')) {
+                $setting = Setting::findOrFail(1);
+                $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
+
+                foreach ($request->patients as $val) {
+                    if(Patient::find($val)) {
+                        $value = Patient::find($val);
+                        $custom_message = str_ireplace('[total_unpaid_bills]', 'N'.$value->unpaid_bills()->sum('amount'), $request->message);
+                        $response = $xmx->sendSms($request->from, array($value->phone_number), $custom_message);
+                    }
+                }
+            } else {
+                $setting = Setting::findOrFail(1);
+                $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
+                if ( isset($request->all_patients) ) {
+                    $response = $xmx->sendSms($request->from, array_flatten(Patient::all()->select('phone_number')->get()->toArray()), $request->message);
+                } else {
+                    $response = $xmx->sendSms($request->from, array_flatten(Patient::whereIn('id', $request->patients)->select('phone_number')->get()->toArray()), $request->message);
+                }
+            }
+        }
 
         // If Message is sent
-        if (true) {
+        if ( count($response) > 1 ) {
+            if ( count($response) == 2 ) {
+                session()->flash('success', 'Sms Successfully Sent! <strong>' . $response[1] . '</strong> sms units used');
+            }
+            if ( count($response) == 3 ) {
+                session()->flash('success', 'Sms Successfully Sent! <strong>' . $response[1] . '</strong> sms units used');
+                session()->flash('error', 'Sms failed to send to <strong>' . $response[2] . '</strong>');
+            }
             // Save Sms Patients
             $request['sms_id'] = $obj1->id;
             $counter = 0;
@@ -192,10 +266,14 @@ class SmsController extends InternalControl
                 $obj2->firstOrCreate($obj2->toArray());
                 $counter++;
             }
+        } else {
+            if ($response != 'Successful') {
+                return redirect()->back()->withErrors('Error ' . $response . ' ' . SmartXmx::interpreteResponse($response));
+            }
         }
 
-        // session()->flash('success', 'Sms Updated and Successfuly Sent to <strong>' . $counter .'</strong> Patients!');
-        session()->flash('success', 'New Sms Created and Successfuly Sent to <strong>' . $counter .'</strong> Patients!');
+        // session()->flash('success', 'Sms Updated and Successfully Sent to <strong>' . $counter .'</strong> Patients!');
+        session()->flash('success', 'New Sms Created and Successfully Sent to <strong>' . $counter .'</strong> Patients!');
         return redirect()->back();
     }
 
@@ -223,11 +301,11 @@ class SmsController extends InternalControl
         $xmx = new SmartXmx($setting->sms_username, $setting->sms_password);
         $response = $xmx->checkSmsBalance();
 
-        if (is_null(SmartXmx::interpreteResponse($response))) {
+        if ( str_contains($response, '.') ) {
             $balance = $response;
             session()->flash('success', 'Your Sms Balance is <strong>' . $balance . '</strong>');
         } else {
-            if (SmartXmx::interpreteResponse($response) != 'Successful') {
+            if ($response != 'Successful') {
                 return redirect()->back()->withErrors('Error ' . $response . ' ' . SmartXmx::interpreteResponse($response));
             }
         }

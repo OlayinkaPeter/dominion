@@ -66,6 +66,12 @@
                                             <span>send sms</span>
                                         </a>
                                     </span>
+                                    <span>
+                                        <a href="{{ url('/m/patient_files/patient_file_number/'.$element->file_number) }}" class="mr10 text-primary">
+                                            <strong style="color: #555;">{{ $element->patient_files->count() }}</strong>
+                                            <span>patient files</span>
+                                        </a>
+                                    </span>
                                     <a data-toggle="collapse" data-parent="#accordio" href="#collapse{{ $element->id }}" aria-expanded="true" aria-controls="collapse{{ $element->id }}" class="mr10">view</a>
                                     <a href="#modal-update-{{ $element->id }}" data-toggle="modal" class="mr10">update</a>
                                     <a href="{{ url('/m/patients/delete/'.$element->id) }}" class="mr10 text-danger">
@@ -116,7 +122,7 @@
         // For Printing
         function printPatientDiv(divName) {
             w=window.open();
-            w.document.write("<!DOCTYPE html><html><head><title>Patient Printout | DMC</title><link href='{{ asset('urban/vendor/bootstrap/dist/css/bootstrap.css') }}' rel='stylesheet'><link href='{{ asset('urban/styles/urban.css') }}' rel='stylesheet'><style type='text/css'>a.text-primary{color:#0099cc!important;}a.text-primary:hover{color:#007399!important;}a.text-danger{color:#d96557!important;}a.text-danger:hover{color:#ce402f!important;}@media(min-width: 768px){.dl-horizontal dt{width:40%;}.dl-horizontal dd{margin-left:44%;width:55%;}}</style></head><body>" +
+            w.document.write("<!DOCTYPE html><html><head><title>Patient Printout | DMC</title><link href='{{ asset('urban/vendor/bootstrap/dist/css/bootstrap.css') }}' rel='stylesheet'><link href='{{ asset('urban/styles/urban.css') }}' rel='stylesheet'><style type='text/css'>@media print {.hidden-print{display: none !important;}}a.text-primary{color:#0099cc!important;}a.text-primary:hover{color:#007399!important;}a.text-danger{color:#d96557!important;}a.text-danger:hover{color:#ce402f!important;}@media(min-width: 768px){.dl-horizontal dt{width:40%;}.dl-horizontal dd{margin-left:44%;width:55%;}}</style></head><body style='background: transparent;'>" +
             // "<h2 style='text-align:center;font-weight:bold;'>DOMINION MEDICAL CENTER</h2>" +
             // "<h5 style='text-align:center;font-weight:light;'>Specialist Medical And Diagonistics Center</h5>" +
             // "<h5 style='text-align:center;font-weight:light;'>" +

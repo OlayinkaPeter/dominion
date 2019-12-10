@@ -3,28 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Sms;
+use App\Patient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SmsController extends Controller
 {
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->page = collect();
+        $this->page->title = 'My SMS';
+        $this->page->view = 'sms';
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($id = '')
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return view($this->page->view)
+            ->with('sms', Sms::all())
+            ->with('page', $this->page);
     }
 
     /**
